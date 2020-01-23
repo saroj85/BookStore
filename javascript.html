@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+
+    <style>
+        .container {
+            width: 400px;
+            margin: auto;
+
+        }
+
+        input {
+            width: 100%;
+            height: 40px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .input-box {
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+
+        table {
+            width: 100%;
+        }
+
+        td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-collapse: collapse;
+        }
+
+        .alert {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .red {
+            background-color: red;
+            color: #fff;
+        }
+
+        .sucess {
+            background-color: seagreen;
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h2 style="text-align: center;">Book Add</h2>
+        <div class="form-box">
+            <div class="input-box">
+                <label for="book name">book Name</label>
+                <input type="text" id="book-name">
+            </div>
+            <div class="input-box">
+                <label for="book name">Author</label>
+                <input type="text" id="author">
+            </div>
+            <div class="input-box">
+                <label for="book name">isbn</label>
+                <input type="text" id="isbn">
+            </div>
+            <button id="submit">Submit</button>
+        </div>
+
+        <table>
+
+            <thead>
+                <th>Name</th>
+                <th>Author</th>
+                <th>ISBN</th>
+            </thead>
+
+            <tbody id="book-list"></tbody>
+        </table>
+    </div>
+
+</body>
+
+
+
+<script>
+    // book constructor 
+    function Book(name, author, isbn) {
+        this.name = name;
+        this.author = author;
+        this.isbn = isbn;
+    }
+
+
+    // ui constructor 
+    function UI() { }
+    UI.prototype.addBookToList = (book) => {
+        // create book list 
+        const List = document.getElementById("book-list");
+        // create tr Element 
+        const row = document.createElement("tr");
+        // create td element 
+        row.innerHTML = `
+                <td>${book.name}</td>
+                <td>${book.author}</td>
+                <td>${book.isbn}</td>
+                <td><a class="delete" href="#">X</a></td>
+            `;
+        List.appendChild(row)
+    }
+
+    // create clear filed 
+    UI.prototype.clearFiled = () => {
+        document.getElementById("book-name").value = "";
+        document.getElementById("author").value = "";
+        document.getElementById("isbn").value = "";
+    }
+
+    // create alert form 
+    UI.prototype.showError = (message, className) => {
+
+        // create div 
+        const DIV = document.createElement("div");
+        // add Class 
+        DIV.className = `alert ${className}`
+        // insert error text 
+        DIV.appendChild(document.createTextNode(message));
+        // get Container 
+        const container = document.querySelector(".container");
+        // get list 
+        const form = document.querySelector(".form-box");
+
+        container.insertBefore(DIV, form);
+
+        // remove afer 3 s  
+        setTimeout(() => {
+            document.querySelector(".alert").remove()
+        }, 3000);
+
+    }
+
+
+
+
+    // delete book 
+    UI.prototype.deletBook = (target) => {
+        if (target.className === "delete") {
+            var ok = confirm("Are you Sure ")
+            if (ok) {
+                target.parentElement.parentElement.remove()
+            }
+        }
+    }
+
+
+
+
+
+
+    // local store 
+    class storeBook {
+
+        // get books 
+        static getBooks() {
+            let books;
+
+            if (localStorage.getItem("books")) {
+                let books = []
+            }
+            else {
+                books = JSON.parse(localStorage.getItem("books"));
+                
+            }
+            return books;
+          
+        }
+        // add book 
+        static addBook(book) {
+            console.log("DFA", book)
+            let books = JSON.parse(localStorage.getItem("books"));
+            books.push(book)
+
+            localStorage.setItem("books", JSON.stringify(books));
+        }
+
+
+        // display books 
+        static displayBooks() {
+            const books = JSON.parse(localStorage.getItem("books"));
+            var newbook = books.forEach(book => {
+                const ui = new UI;
+                ui.addBookToList(book);
+            });
+        }
+
+        static removeBook() {
+
+
+        }
+    }
+
+
+
+
+    // dom Load Event 
+    document.addEventListener('DOMContentLoaded', storeBook.displayBooks);
+
+
+
+    // Event Listner 
+    document.getElementById("submit").addEventListener("click", () => {
+        const name = document.getElementById("book-name").value,
+            author = document.getElementById("author").value,
+            isbn = document.getElementById("isbn").value;
+
+        const book = new Book(name, author, isbn);
+        const ui = new UI();
+        if (name === "" || author === "" || isbn === "") {
+            ui.showError("Please enter all filed", "red")
+        }
+        else {
+            ui.addBookToList(book)
+            // add to local storage 
+            storeBook.addBook(book);
+            ui.clearFiled();
+            ui.showError("Book added sucessFull", "sucess")
+        }
+
+    });
+
+
+
+    // Event listner from delete 
+    document.getElementById("book-list").addEventListener("click", (e) => {
+        const ui = new UI()
+        ui.deletBook(e.target);
+    })
+
+
+// localStorage.setItem("name", "saroj");
+// sessionStorage.setItem("name", "saroj")
+
+
+</script>
+
+</html>
